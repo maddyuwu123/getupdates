@@ -1,6 +1,6 @@
 # getupdates
 This is a project I made from scratch.
-Originally, it was just going to be a bash script for Arch Linux, but it kind spiraled out of control.
+Originally, it was just going to be a bash script for Arch Linux, but it kind spiraled out of control lmao.
 
 ## Installation
 Download the zip file and execute the corresponding executable.

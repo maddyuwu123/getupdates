@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -o pipefail
+set -e
 
 #  Copyright (C) 2026  Madison Reid
 #
@@ -18,87 +19,57 @@ set -o pipefail
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 echo "This script supports Linux and macOS. Press any key to continue or Ctrl+C to exit."
-read -s -N1 
+read -s -n1 
 
-if [[ $OSTYPE == linux-gnu ]]; then
-	if command -v apt-get >/dev/null 2>&1; then
-		MANAGER="apt-get update -y && apt-get upgrade -y"
-	elif command -v dnf >/dev/null 2>&1; then
-		MANAGER="dnf update -y"
-	elif command -v yum >/dev/null 2>&1; then
-		MANAGER="yum update -y"
-	elif command -v zypper >/dev/null 2>&1; then
-		MANAGER="zypper update -y"
-	elif command -v pacman >/dev/null 2>&1; then
-		MANAGER="pacman -Syu --noconfirm"
-	# Add your package manager below
-	#elif command -v [package manager] > /dev/null 2>&1; then
-	# 	MANAGER="[command]"
-	else
-		echo "Can't find a supported package manager!"
-		exit 1
-	fi
+if [[ $OSTYPE == linux* ]]; then
+	for mgr in apt-get dnf yum zypper pacman; do
+		command -v "$mgr" >/dev/null 2>&1 && MANAGER="$mgr" && break
+	done
 
-	if command -v flatpak >/dev/null 2>&1; then
-		FLATPAK=true
-	fi
+	[[ -z "$MANAGER" ]] && echo "Can't find a supported package manager!" && exit 1
 
-	if command -v snap >/dev/null 2>&1; then
-		SNAP=true
-	fi
+	command -v flatpak >/dev/null 2>&1 && FLATPAK=true
+	command -v snap >/dev/null 2>&1 && SNAP=true
 
 	case "$MANAGER" in
-	*apt-get*)
-		sudo $MANAGER
+	apt-get)
+		sudo apt-get update && sudo apt-get upgrade -y
 		;;
-	esac
-
-	case "$MANAGER" in
-	*dnf*)
-		sudo $MANAGER
+	dnf)
+		sudo dnf update -y
 		;;
-	esac
-
-	case "$MANAGER" in
-	*yum*)
-		sudo $MANAGER
+	yum)
+		sudo yum update -y
 		;;
-	esac
-
-	case "$MANAGER" in
-	*zypper*)
-		sudo $MANAGER
+	zypper)
+		sudo zypper update --non-interactive
 		;;
-	esac
-
-	case "$MANAGER" in
-	*pacman*)
+	pacman)
 		if command -v yay >/dev/null 2>&1; then
 			yay -Syu --noconfirm
 		elif command -v paru >/dev/null 2>&1; then
 			paru -Syu --noconfirm
 		else
-			sudo $MANAGER
+			sudo pacman -Syu --noconfirm
 		fi
 		;;
 	esac
 
-	#case "$MANAGER" in
-	#	*[package manager]*)
-	#		[command]
-	#		;;
-	#esac
-
-	if echo "$FLATPAK" | grep -q "true"; then
-		sudo flatpak upgrade
+	if [[ "$FLATPAK" == "true" ]]; then
+		sudo flatpak upgrade -y
 	fi
 
-	if echo "$SNAP" | grep -q "true"; then
-		sudo snap upgrade
+	if [[ "$SNAP" == "true" ]]; then
+		sudo snap refresh
 	fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
+	if command -v brew >/dev/null 2>&1; then
+		brew update && brew upgrade
+	fi
 	sudo softwareupdate --install --all
-elif [[ "$OSTYPE" == * ]]; then
+else
 	echo "Unsupported operating system."
 	exit 1
 fi
+
+echo "Done!"
