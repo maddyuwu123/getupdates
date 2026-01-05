@@ -62,6 +62,10 @@ if [[ $OSTYPE == linux* ]]; then
 	if [[ "$SNAP" == "true" ]]; then
 		sudo snap refresh
 	fi
+
+	echo "All done! Press any key to exit."
+	read -s -n1
+	exit 0
 elif [[ "$OSTYPE" == "darwin"* ]]; then
 	if command -v brew >/dev/null 2>&1; then
 		brew update && brew upgrade
