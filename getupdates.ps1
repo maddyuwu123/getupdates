@@ -24,7 +24,7 @@ if ($IsWindows) {
 		}
 
 		if (Get-Module -ListAvailable -Name PSWindowsUpdate) {
-			Write-Host "Downloading Windows updates, This may take a while."
+			Write-Host "Downloading Windows updates, this may take a while."
 			Get-WindowsUpdate
 			Install-WindowsUpdate -AcceptAll
 		} else {
